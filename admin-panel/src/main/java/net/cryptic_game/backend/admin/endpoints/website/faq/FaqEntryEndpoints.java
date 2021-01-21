@@ -4,13 +4,13 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 import lombok.RequiredArgsConstructor;
 import net.cryptic_game.backend.admin.authentication.AdminPanelAuthenticator;
 import net.cryptic_game.backend.admin.authentication.Permission;
 import net.cryptic_game.backend.admin.data.sql.entities.website.faq.FaqEntry;
 import net.cryptic_game.backend.admin.data.sql.repositories.website.faq.FaqEntryRepository;
+import net.cryptic_game.backend.admin.endpoints.website.WebsiteUtils;
 import net.cryptic_game.backend.base.api.annotations.ApiEndpoint;
 import net.cryptic_game.backend.base.api.annotations.ApiEndpointCollection;
 import net.cryptic_game.backend.base.api.annotations.ApiParameter;
@@ -19,21 +19,9 @@ import net.cryptic_game.backend.base.api.data.ApiType;
 
 @RequiredArgsConstructor
 @ApiEndpointCollection(id = "website/faq", description = "manages faq", type = ApiType.REST, authenticator = AdminPanelAuthenticator.class)
-public class FaqEntryEndpoints {
-
-    private static final Pattern XXS_FILTER = Pattern.compile("<[^ ]+>");
+public final class FaqEntryEndpoints {
 
     private final FaqEntryRepository faqEntryRepository;
-
-    /**
-     * returns true if an xxs attempt might be there.
-     *
-     * @param content content to prove
-     * @return true if html tags might be in the content
-     */
-    private static boolean checkXxs(final String content) {
-        return XXS_FILTER.matcher(content).find();
-    }
 
     @ApiEndpoint(id = "list")
     public ApiResponse list() {
@@ -43,7 +31,7 @@ public class FaqEntryEndpoints {
     @ApiEndpoint(id = "add", authentication = Permission.FAQ_MANAGEMENT)
     public ApiResponse add(@ApiParameter(id = "question") final String question,
                            @ApiParameter(id = "answer") final String answer) {
-        if (checkXxs(question) || checkXxs(answer)) {
+        if (WebsiteUtils.checkXxs(question) || WebsiteUtils.checkXxs(answer)) {
             return new ApiResponse(HttpResponseStatus.BAD_REQUEST, "NO_HTML_TAGS_ALLOWED");
         }
 
@@ -59,7 +47,7 @@ public class FaqEntryEndpoints {
     public ApiResponse update(@ApiParameter(id = "id") final UUID id,
                               @ApiParameter(id = "question") final String question,
                               @ApiParameter(id = "answer") final String answer) {
-        if (checkXxs(question) || checkXxs(answer)) {
+        if (WebsiteUtils.checkXxs(question) || WebsiteUtils.checkXxs(answer)) {
             return new ApiResponse(HttpResponseStatus.BAD_REQUEST, "NO_HTML_TAGS_ALLOWED");
         }
 
